@@ -1,0 +1,8 @@
+PUT http://localhost:3001/api/articles/2
+Content-Type: application/json 
+
+{
+"id": 2, "name": "updated article name", "descr": "article that has been updated", "stock" : 51
+}
+
+
