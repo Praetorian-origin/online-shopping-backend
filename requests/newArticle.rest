@@ -5,4 +5,10 @@ Content-Type: application/json
 "name": "Some article", "descr": "blabla", "stock" : 2
 }
 
+ POST http://localhost:3001/api/articles/ 
+Content-Type: application/json 
+
+{
+"name": "Second article", "descr": "Random article", "stock" : 71
+}
 

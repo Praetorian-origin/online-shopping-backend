@@ -1,87 +1,72 @@
-let articles = require("../models/articlesData");
-
-articles = articles.articles
-
+const Article = require("../models/article");
 
 const articlesRouter = require("express").Router();
 
-const generateId = () => {
-  const maxId =
-    articles.length > 0 ? Math.max(...articles.map((n) => n.id)) : 0;
-  return maxId + 1;
-};
+articlesRouter.get("/:id", async (request, response) => {
+  const article = await Article.findById(request.params.id);
 
-
-
-articlesRouter.get("/:id", (request, response) => {
-
-const id = Number(request.params.id);
-const article = articles.find(article => article.id === id);
-
-
-  if (article === null || article === undefined) {
-    return response.status(404).end();
+  if (article) {
+    response.json(article.toJSON());
+  } else {
+    response.status(404).end();
   }
-
-  return response.json(article);
 });
 
-articlesRouter.put("/:id", (request, response, next) => {
+articlesRouter.put("/:id", async (request, response, next) => {
   const body = request.body;
-  const idToUpdate = Number(request.params.id);
 
   if (!body.name) {
     return response.status(400).json({
       error: "content missing",
     });
   }
-  const updatedArticle = {
-    id: idToUpdate,
+  const articleToModify = {
     name: body.name,
     descr: body.descr,
     stock: body.stock,
   };
 
-  articles = articles.map((article) =>
-    article.id === idToUpdate ? updatedArticle : article
+  const updatedArticle = await Article.findByIdAndUpdate(
+    request.params.id,
+    articleToModify,
+    { new: true }
   );
-
-
-  response.json(updatedArticle);
+  response.json(updatedArticle.toJSON());
 });
 
-articlesRouter.post("/", (request, response) => {
+articlesRouter.post("/", async (request, response) => {
   const body = request.body;
 
-  if (!body.name) {
+  if (!body.name && !body.descr && !body.stock) {
     return response.status(400).json({
       error: "content missing",
     });
   }
 
-  const article = {
-    id: generateId(),
+  const article = new Article({
     name: body.name,
     descr: body.descr,
     stock: body.stock,
-  };
+  });
 
-  articles = articles.concat(article);
-  response.json(article);
+  await article.save();
+  response.json(article.toJSON());
 });
 
-articlesRouter.get("/", (request, response) => response.json(articles));
+articlesRouter.get("/", async (request, response) => {
+  const articles = await Article.find({});
+  response.json(articles.map((article) => article.toJSON()));
+});
 
-articlesRouter.delete("/:id", (request, response) => {
+articlesRouter.delete("/:id", async (request, response) => {
   if (request.params.id === undefined || request.params.id === null) {
     return response.status(400).json({
       error: "Id to delete missing",
     });
   }
 
-  const id = Number(request.params.id);
+  await Article.findByIdAndDelete(request.params.id);
 
-  articles = articles.filter((article) => article.id !== id);
   response.status(200).json({
     info: "article deleted",
   });
