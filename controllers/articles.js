@@ -37,7 +37,7 @@ articlesRouter.put("/:id", async (request, response, next) => {
 articlesRouter.post("/", async (request, response) => {
   const body = request.body;
 
-  if (!body.name && !body.descr && !body.stock) {
+  if (!body.name || !body.descr || !body.stock) {
     return response.status(400).json({
       error: "content missing",
     });
@@ -67,7 +67,7 @@ articlesRouter.delete("/:id", async (request, response) => {
 
   await Article.findByIdAndDelete(request.params.id);
 
-  response.status(200).json({
+  response.status(204).json({
     info: "article deleted",
   });
 });
